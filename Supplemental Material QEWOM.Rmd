@@ -1,0 +1,195 @@
+---
+title: "Supplemental Material QEWOM"
+author: | 
+  | Juan C. Correa
+  | University of Economics, Prague
+date: "6/22/2020"
+output: pdf_document
+---
+
+This supplemental material aims at providing an easy step-by-step, reproducible guide for quantifying the emergence, self-organization, and complexity of customers' comments. First, we upload our raw data set as follows (don't forget to replace the folder address if you download our data set from Github and save it somewhere in your hard disk).
+
+```{r}
+load("/home/juan/Comments.RData")
+```
+
+Now, we will use the quanteda package for generating the corpus and conducting usual preprocessing such as removing stopwords, and incorporate metadata that associates the category of the restaurant the commercial name of the provider and the quantitative rating of each comment.
+
+```{r}
+library(quanteda)
+my_corpus <- corpus(UserComments$text)
+mycorpus <- data.frame(summary(my_corpus, n = nrow(UserComments)))
+head(summary(my_corpus))
+docvars(my_corpus, "Category") <- UserComments$Category
+docvars(my_corpus, "Provider") <- UserComments$Provider
+docvars(my_corpus, "Rating") <- UserComments$Rating
+```
+
+Let's include in our initial dataset the number of different words per comment (Types), the total number of words per comment (Tokens) and the number of sentences (Sentences)
+
+```{r}
+UserComments$Types <- mycorpus$Types
+UserComments$Tokens <- mycorpus$Tokens
+UserComments$Sentences <- mycorpus$Sentences
+```
+
+Here, we see that we have six categories, and here, we see the distribution of discrete ratings
+```{r}
+unique(UserComments$Provider)
+Ratings <- table(UserComments$Rating)
+barplot(Ratings, main="Distribution of Ratings", 
+        xlab="Rating value")
+```
+
+Let's proceed by creating a similarity matrix for each restaurant category. In these matrices we basically estimate the Jaccard index for pairwise comparison of comments. But before that, we need to customize our stopwords like this:
+
+```{r}
+spanishstopwords <- c("q", stopwords("spanish"))
+library(quanteda)
+CommentsAsian <- dfm(corpus_subset(
+  my_corpus, Category == "Asian"), 
+  remove_numbers = TRUE, 
+  remove = spanishstopwords, 
+  stem = TRUE, 
+  remove_punct = TRUE) 
+
+Asian <- textstat_simil(
+  CommentsAsian, 
+  margin = "documents", 
+  method = "jaccard")
+Asiandf <- data.frame(as.matrix(Asian))
+Asiandf[is.na(Asiandf)] <- 0
+Asian <- data.frame(
+  jaccard = Asian[lower.tri(Asian, diag = FALSE)])
+```
+
+Now, we can apply a Gaussian finite mixture model fitted by EM algorithm, like this:
+
+```{r}
+library(mclust)
+fit <- Mclust(Asiandf)
+summary(fit)
+clasificados <- data.frame(fit$classification)
+names(clasificados)[1] <- "classification"
+clasificados$Category <- "Asian"
+```
+
+As a result, we can see that the content of customers' word-of-mouth can be classified into nine different content-wise categories. Let's proceed with the rest of restaurant categories to see if this data-driven classification holds.
+
+```{r}
+CommentsBurgers <- dfm(
+  corpus_subset(my_corpus, 
+                Category == "Burgers"), 
+  remove = spanishstopwords, 
+  stem = TRUE, 
+  remove_punct = TRUE, 
+  remove_numbers = TRUE) 
+Burgers <- textstat_simil(
+  CommentsBurgers, 
+  margin = "documents", 
+  method = "jaccard")
+Burgersdf <- data.frame(as.matrix(Burgers))
+Burgersdf[is.na(Burgersdf)] <- 0
+Burgers <- data.frame(jaccard = Burgers[lower.tri(Burgers, diag = FALSE)])
+fit2 <- Mclust(Burgersdf)
+summary(fit2)
+clasificados2 <- data.frame(fit2$classification)
+names(clasificados2)[1] <- "classification"
+clasificados2$Category <- "Burgers"
+
+CommentsChicken <- dfm(
+  corpus_subset(my_corpus, 
+                Category == "Chicken"), 
+  remove = spanishstopwords, 
+  stem = TRUE, 
+  remove_punct = TRUE, 
+  remove_numbers = TRUE)
+Chicken <- textstat_simil(
+  CommentsChicken, 
+  margin = "documents", 
+  method = "jaccard")
+Chickendf <- data.frame(as.matrix(Chicken))
+Chickendf[is.na(Chickendf)] <- 0
+Chicken <- data.frame(jaccard = Chicken[lower.tri(Chicken, diag = FALSE)])
+fit3 <- Mclust(Chickendf)
+summary(fit3)
+clasificados3 <- data.frame(fit3$classification)
+names(clasificados3)[1] <- "classification"
+clasificados3$Category <- "Chicken"
+
+CommentsBeverage <- dfm(
+  corpus_subset(my_corpus, 
+                Category == "Alcoholic Beverages"), 
+  remove = spanishstopwords, 
+  stem = TRUE, 
+  remove_punct = TRUE, 
+  remove_numbers = TRUE)
+Beverage <- textstat_simil(
+  CommentsBeverage, 
+  margin = "documents", 
+  method = "jaccard")
+Beveragedf <- data.frame(as.matrix(Beverage))
+Beveragedf[is.na(Beveragedf)] <- 0
+Beverage <- data.frame(jaccard = Beverage[lower.tri(Beverage, diag = FALSE)])
+fit4 <- Mclust(Beveragedf)
+summary(fit4)
+clasificados4 <- data.frame(fit4$classification)
+names(clasificados4)[1] <- "classification"
+clasificados4$Category <- "Beverages"
+
+CommentsMeat <- dfm(
+  corpus_subset(my_corpus, 
+                Category == "Meat"), 
+  remove = spanishstopwords, 
+  stem = TRUE, 
+  remove_punct = TRUE, 
+  remove_numbers = TRUE)
+Meat <- textstat_simil(
+  CommentsMeat, 
+  margin = "documents", 
+  method = "jaccard")
+Meatdf <- data.frame(as.matrix(Meat))
+Meat <- data.frame(jaccard = Meat[lower.tri(Meat, diag = FALSE)])
+Meatdf[is.na(Meatdf)] <- 0
+fit5 <- Mclust(Meatdf)
+summary(fit5)
+clasificados5 <- data.frame(fit5$classification)
+names(clasificados5)[1] <- "classification"
+clasificados5$Category <- "Meat"
+
+CommentsPizza <- dfm(
+  corpus_subset(my_corpus, 
+                Category == "Pizzas"), 
+  remove = spanishstopwords, 
+  stem = TRUE, 
+  remove_punct = TRUE, 
+  remove_numbers = TRUE)
+Pizza <- textstat_simil(
+  CommentsPizza, 
+  margin = "documents", 
+  method = "jaccard")
+Pizzadf <- data.frame(as.matrix(Pizza))
+Pizzadf[is.na(Pizzadf)] <- 0
+Pizza <- data.frame(jaccard = Pizza[lower.tri(Pizza, diag = FALSE)])
+fit6 <- Mclust(Pizzadf)
+summary(fit6)
+clasificados6 <- data.frame(fit6$classification)
+names(clasificados6)[1] <- "classification"
+clasificados6$Category <- "Pizza"
+```
+
+Now, let's merge all datasets as follows, and see empirical distributions of customers' ratings as a function of the nine content-wise categories of word-of-mouth.
+
+```{r}
+classification <- do.call("rbind", list(clasificados, clasificados2, clasificados3, clasificados4, clasificados5, clasificados6))
+UserComments$classification <- classification$classification
+table(UserComments$classification)
+library(ggplot2)
+library(ggridges)
+ggplot(
+  UserComments, 
+  aes(x = Rating, y = as.factor(classification))) +
+  theme_minimal() +
+  geom_density_ridges2(alpha = 0.3)
+```
+
