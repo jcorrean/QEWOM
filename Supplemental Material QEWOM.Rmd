@@ -193,3 +193,9 @@ ggplot(
   geom_density_ridges2(alpha = 0.3)
 ```
 
+Now, let's dive deep into the content categories that emerged from the previous analysis. 
+
+```{r}
+
+```
+
