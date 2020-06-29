@@ -26,3 +26,4 @@ docvars(my_corpus, "Rating") <- df$Rankings
 docvars(my_corpus, "MinimumOrder") <- df$Deliveries
 head(summary(my_corpus))
 
+
