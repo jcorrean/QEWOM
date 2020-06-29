@@ -1,5 +1,7 @@
 load("/home/juan/Documents/ComentariosFrescosDomicilios/DomiciliosComments.RData")
 rm(list=setdiff(ls(), "df"))
+library(dplyr)
+df$Rankings <- gsub("[[:punct:]]", "", df$Rankings) %>% as.numeric(df$Rankings)
 df$comments <- as.character(df$Comments)
 df$TotalComments <- as.numeric(gsub("[^0-9.-]", "", df$Total_comments))
 deliveries <- data.frame(table(df$Deliveries))
@@ -13,12 +15,12 @@ df <- mutate(df, DeliveryTime =
          ifelse(grepl("45-60 mins", Times), "45-60",
          "60-90")))
 
-table(df$DeliveryTime)
 
 library(quanteda)
 my_corpus <- corpus(df$comments)
 mycorpus <- data.frame(summary(my_corpus, n = nrow(df)))
 head(summary(my_corpus))
 docvars(my_corpus, "Name") <- df$Name
-docvars(my_corpus, "Provider") <- UserComments$Provider
-docvars(my_corpus, "Rating") <- UserComments$Rating
+docvars(my_corpus, "ShipmentCost") <- df$Shippings
+docvars(my_corpus, "Rating") <- df$Rankings
+head(summary(my_corpus))
