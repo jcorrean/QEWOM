@@ -7,7 +7,6 @@ df$TotalComments <- as.numeric(gsub("[^0-9.-]", "", df$Total_comments))
 deliveries <- data.frame(table(df$Deliveries))
 df$Deliveries <- as.numeric(gsub("[^0-9.-]", "", df$Deliveries))
 deliveries2 <- data.frame(table(df$Deliveries))
-table(df$Times)[3]
 
 library(dplyr)
 df <- mutate(df, DeliveryTime =
@@ -15,6 +14,7 @@ df <- mutate(df, DeliveryTime =
          ifelse(grepl("45-60 mins", Times), "45-60",
          "60-90")))
 
+Provider <- data.frame(table(df$Name))
 
 library(quanteda)
 my_corpus <- corpus(df$comments)
@@ -23,4 +23,6 @@ head(summary(my_corpus))
 docvars(my_corpus, "Name") <- df$Name
 docvars(my_corpus, "ShipmentCost") <- df$Shippings
 docvars(my_corpus, "Rating") <- df$Rankings
+docvars(my_corpus, "MinimumOrder") <- df$Deliveries
 head(summary(my_corpus))
+
