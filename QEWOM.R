@@ -14,7 +14,7 @@ df <- mutate(df, DeliveryTime =
          ifelse(grepl("45-60 mins", Times), "45-60",
          "60-90")))
 
-Provider <- data.frame(table(df$Name))
+Restaurants <- data.frame(table(df$Name))
 
 library(quanteda)
 my_corpus <- corpus(df$comments)
@@ -29,7 +29,21 @@ head(summary(my_corpus))
 CustomersDFM <- dfm(my_corpus)
 CustomersDFM[,1:5]
 
+
+# Based on the number of comments, we select 
+# the restaurants with comments above 100
+SelectedRestaurants <- filter(Restaurants, Freq > 100)
+# Because some of these restaurants are located in
+# different places of the city, we will merge the comments
+# in just one single corpus for each restaurant
 ArrozyPasta <- corpus_subset(my_corpus, grepl("Arroz y Pasta al Wok", Name))
 ArrozyPastaDFM <- dfm(ArrozyPasta)
+
 BogotaFoodCompany <- corpus_subset(my_corpus, grepl("Bogota Food Company", Name))
 BogotaFoodCompanyDFM <- dfm(BogotaFoodCompany)
+
+CasadelSushi <- corpus_subset(my_corpus, grepl("Casa Del Sushi", Name))
+CasadelSushiDFM <- dfm(CasadelSushi)
+
+CharliesRoastbeef <- corpus_subset(my_corpus, grepl("Charlies Roastbeef", Name))
+CharliesRoastbeefDFM <- dfm(CharliesRoastbeef)
