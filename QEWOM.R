@@ -28,3 +28,8 @@ head(summary(my_corpus))
 
 CustomersDFM <- dfm(my_corpus)
 CustomersDFM[,1:5]
+
+ArrozyPasta <- corpus_subset(my_corpus, grepl("Arroz y Pasta al Wok", Name))
+ArrozyPastaDFM <- dfm(ArrozyPasta)
+BogotaFoodCompany <- corpus_subset(my_corpus, grepl("Bogota Food Company", Name))
+BogotaFoodCompanyDFM <- dfm(BogotaFoodCompany)
