@@ -15,67 +15,171 @@ df <- mutate(df, DeliveryTime =
          "60-90")))
 
 Restaurants <- data.frame(table(df$Name))
-
-library(quanteda)
-my_corpus <- corpus(df$comments)
-mycorpus <- data.frame(summary(my_corpus, n = nrow(df)))
-head(summary(my_corpus))
-docvars(my_corpus, "Name") <- df$Name
-docvars(my_corpus, "ShipmentCost") <- df$Shippings
-docvars(my_corpus, "Rating") <- df$Rankings
-docvars(my_corpus, "MinimumOrder") <- df$Deliveries
-head(summary(my_corpus))
-
-CustomersDFM <- dfm(my_corpus)
-CustomersDFM[,1:5]
-
-
 # Based on the number of comments, we select 
 # the restaurants with comments above 100
 SelectedRestaurants <- filter(Restaurants, Freq > 200)
+# We merged the comments of different restaurants that
+# share the same commercial brand (e.g., KFC) and 
+# have different branch or point-of-sale.
+
+DefinitiveSample <- filter(
+  df, grepl("Arroz y Pasta al Wok", Name) |
+      grepl("Bogota Food Company", Name) |
+      grepl("Casa Del Sushi", Name) |
+      grepl("Charlies Roastbeef", Name) |  
+      grepl("China Tao", Name) |
+      grepl("Colombia and Pizza", Name) |
+      grepl("Comidas Rapidas", Name) |
+      grepl("Donde Beto", Name) |
+      grepl("Donde Lucho", Name) |
+      grepl("Donde Pele", Name) |
+      grepl("El Señor del Pollo", Name) |
+      grepl("Frisby", Name) |
+      grepl("Hamburguesas Santa Fe", Name) |
+      grepl("Hot Delivery Principal", Name) |
+      grepl("Juancho", Name) |
+      grepl("JYS", Name) |
+      grepl("KFC", Name) |
+      grepl("La Sazón", Name) |
+      grepl("Manyares", Name) |
+      grepl("Napoli", Name) |
+      grepl("Perros", Name) |
+      grepl("Pizza del Barrio", Name) |
+      grepl("Presto", Name) |
+      grepl("Sr Wok", Name))
+
+pave <- data.frame(table(DefinitiveSample$Name))
+library(quanteda)
+my_corpus <- corpus(DefinitiveSample$comments)
+mycorpus <- data.frame(summary(my_corpus, n = nrow(DefinitiveSample)))
+head(summary(my_corpus))
+docvars(my_corpus, "Name") <- DefinitiveSample$Name
+docvars(my_corpus, "ShipmentCost") <- DefinitiveSample$Shippings
+docvars(my_corpus, "Rating") <- DefinitiveSample$Rankings
+docvars(my_corpus, "MinimumOrder") <- DefinitiveSample$Deliveries
+head(summary(my_corpus))
+# Let's first create a list of stopwords
+spanishstopwords <- c("q", stopwords("spanish"))
+
+CustomersDFM <- dfm(
+  my_corpus, 
+  remove_numbers = TRUE, 
+  remove = spanishstopwords, 
+  stem = TRUE, 
+  remove_punct = TRUE)
+
+CustomersDFM[,1:5]
+
+
 # Because some of these restaurants are located in
 # different places of the city, we will merge the comments
 # in just one single corpus for each restaurant
-ArrozyPasta <- corpus_subset(my_corpus, grepl("Arroz y Pasta al Wok", Name))
-ArrozyPastaDFM <- dfm(ArrozyPasta)
-convert(ArrozyPastaDFM, to = "data.frame")
+ArrozyPasta <- dfm(corpus_subset(my_corpus, grepl("Arroz y Pasta al Wok", Name)))
+ArrozyPastaSIM <- textstat_simil(ArrozyPasta, margin = "documents", method = "jaccard")
+a <- data.frame(as.matrix(ArrozyPastaSIM))
+library(mclust)
+fit <- Mclust(a)
+summary(fit)
+clasificados <- data.frame(fit$classification)
+names(clasificados)[1] <- "classification"
+clasificados$Category <- "Arroz y Pasta al Wok"
 
-BogotaFoodCompany <- corpus_subset(my_corpus, grepl("Bogota Food Company", Name))
-BogotaFoodCompanyDFM <- dfm(BogotaFoodCompany)
-a <- convert(BogotaFoodCompanyDFM, to = "data.frame")
-
-CasadelSushi <- corpus_subset(my_corpus, grepl("Casa Del Sushi", Name))
-CasadelSushiDFM <- dfm(CasadelSushi)
-b <- convert(CasadelSushiDFM, to = "data.frame")
-
-CharliesRoastbeef <- corpus_subset(my_corpus, grepl("Charlies Roastbeef", Name))
-CharliesRoastbeefDFM <- dfm(CharliesRoastbeef)
-c <- convert(CharliesRoastbeefDFM, to = "data.frame")
-
-ChinaTaoNorte <- corpus_subset(my_corpus, grepl("China", Name))
-ChinaTaoNorteDFM <- dfm(ChinaTaoNorte)
-d <- convert(ChinaTaoNorteDFM, to = "data.frame")
-
-ColombiaAndPizza <- corpus_subset(my_corpus, grepl("Colombia and Pizza", Name))
-ColombiaAndPizzaDFM <- dfm(ColombiaAndPizza)
-e <- convert(ColombiaAndPizzaDFM, to = "data.frame")
-
-ComidasRapidas <- corpus_subset(my_corpus, grepl("Comidas Rapidas", Name))
-ComidasRapidasDFM <- dfm(ComidasRapidas)
-f <- convert(ComidasRapidasDFM, to = "data.frame")
-
-DondeBeto <- corpus_subset(my_corpus, grepl("Donde Beto", Name))
-DondeBetoDFM <- dfm(DondeBeto)
-g <- convert(DondeBetoDFM, to = "data.frame")
+BogotaFoodCompany <- dfm(corpus_subset(my_corpus, grepl("Bogota Food Company", Name)))
+BogotaFoodCompanySIM <- textstat_simil(BogotaFoodCompany, margin = "documents", method = "jaccard")
+b <- data.frame(as.matrix(BogotaFoodCompanySIM))
+b[is.na(b)] <- 0
+fit <- Mclust(b)
+summary(fit)
+clasificados2 <- data.frame(fit$classification)
+names(clasificados2)[1] <- "classification"
+clasificados2$Category <- "Bogota Food Company"
 
 
-DondeLucho <- corpus_subset(my_corpus, grepl("Donde Lucho", Name))
-DondeLuchoDFM <- dfm(DondeLucho)
-h <- convert(DondeLuchoDFM, to = "data.frame")
+CasadelSushi <- dfm(corpus_subset(my_corpus, grepl("Casa Del Sushi", Name)))
+CasadelSushiSIM <- textstat_simil(CasadelSushi, margin = "documents", method = "jaccard")
+c <- data.frame(as.matrix(CasadelSushiSIM))
+c[is.na(c)] <- 0
+fit <- Mclust(c)
+summary(fit)
+clasificados3 <- data.frame(fit$classification)
+names(clasificados3)[1] <- "classification"
+clasificados3$Category <- "Casa del Sushi"
 
-DondePele <- corpus_subset(my_corpus, grepl("Donde Pele", Name))
-DondePeleDFM <- dfm(DondePele)
-i <- convert(DondePeleDFM, to = "data.frame")
+CharliesRoastbeef <- dfm(corpus_subset(my_corpus, grepl("Charlies Roastbeef", Name)))
+CharliesSIM <- textstat_simil(CharliesRoastbeef, margin = "documents", method = "jaccard")
+d <- data.frame(as.matrix(CasadelSushiSIM))
+d[is.na(d)] <- 0
+fit <- Mclust(d)
+summary(fit)
+clasificados4 <- data.frame(fit$classification)
+names(clasificados4)[1] <- "classification"
+clasificados4$Category <- "Charlies Roastbeef"
+
+ChinaTao <- dfm(corpus_subset(my_corpus, grepl("China", Name)))
+ChinaTaoSIM <- textstat_simil(ChinaTao, margin = "documents", method = "jaccard")
+e <- data.frame(as.matrix(ChinaTaoSIM))
+e[is.na(e)] <- 0
+fit <- Mclust(e)
+summary(fit)
+clasificados5 <- data.frame(fit$classification)
+names(clasificados5)[1] <- "classification"
+clasificados5$Category <- "China Tao"
+
+
+
+ColombiaAndPizza <- dfm(corpus_subset(my_corpus, grepl("Colombia and Pizza", Name)))
+ColombiaAndPizzaSIM <- textstat_simil(ColombiaAndPizza, margin = "documents", method = "jaccard")
+f <- data.frame(as.matrix(ColombiaAndPizzaSIM))
+f[is.na(f)] <- 0
+fit <- Mclust(f)
+summary(fit)
+clasificados6 <- data.frame(fit$classification)
+names(clasificados6)[1] <- "classification"
+clasificados6$Category <- "Colombia and Pizza"
+
+
+ComidasRapidas <- dfm(corpus_subset(my_corpus, grepl("Comidas Rapidas", Name)))
+ComidasRapidasSIM <- textstat_simil(ComidasRapidas, margin = "documents", method = "jaccard")
+g <- data.frame(as.matrix(ComidasRapidasSIM))
+g[is.na(g)] <- 0
+fit <- Mclust(g)
+summary(fit)
+clasificados6 <- data.frame(fit$classification)
+names(clasificados6)[1] <- "classification"
+clasificados6$Category <- "Colombia and Pizza"
+
+
+DondeBeto <- dfm(corpus_subset(my_corpus, grepl("Donde Beto", Name)))
+DondeBetoSIM <- textstat_simil(DondeBeto, margin = "documents", method = "jaccard")
+h <- data.frame(as.matrix(DondeBetoSIM))
+h[is.na(h)] <- 0
+fit <- Mclust(g)
+summary(fit)
+clasificados7 <- data.frame(fit$classification)
+names(clasificados7)[1] <- "classification"
+clasificados7$Category <- "Donde Beto"
+
+
+DondeLucho <- dfm(corpus_subset(my_corpus, grepl("Donde Lucho", Name)))
+DondeLuchoSIM <- textstat_simil(DondeLucho, margin = "documents", method = "jaccard")
+i <- data.frame(as.matrix(DondeLuchoSIM))
+i[is.na(i)] <- 0
+fit <- Mclust(i)
+summary(fit)
+clasificados8 <- data.frame(fit$classification)
+names(clasificados8)[1] <- "classification"
+clasificados8$Category <- "Donde Lucho"
+
+
+DondePele <- dfm(corpus_subset(my_corpus, grepl("Donde Pele", Name)))
+DondePeleDFM <- textstat_simil(DondePele, margin = "documents", method = "jaccard")
+j <- data.frame(as.matrix(DondeBetoSIM))
+j[is.na(j)] <- 0
+fit <- Mclust(j)
+summary(fit)
+clasificados7 <- data.frame(fit$classification)
+names(clasificados7)[1] <- "classification"
+clasificados7$Category <- "Donde Beto"
 
 Elsenor <- corpus_subset(my_corpus, grepl("El Señor del Pollo", Name))
 ElsenorDFM <- dfm(Elsenor)
