@@ -49,6 +49,8 @@ DefinitiveSample <- filter(
       grepl("Sr Wok", Name))
 
 DefinitiveSample <- DefinitiveSample[c(1,8:11)]
+rm(list=setdiff(ls(), "DefinitiveSample"))
+write.csv(DefinitiveSample, file = "/home/juan/Documents/ComentariosFrescosDomicilios/df.csv")
 
 library(quanteda)
 my_corpus <- corpus(DefinitiveSample$comments)
@@ -72,11 +74,6 @@ CustomersDFM <- dfm(
 # Here, we can check the document-term frequency
 CustomersDFM[,1:5]
 
-# Let's see if this document-term frequency is clusterable
-# or not, by calculating the Hopkins statistics.
-
-library(clustertend)
-hopkins(as.matrix(CustomersDFM), n = nrow(DefinitiveSample)/4)
 
 
 # Finally, we end up with the following
