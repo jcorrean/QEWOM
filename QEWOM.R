@@ -26,7 +26,6 @@ ToyDB <- filter(
     df, grepl("Arroz y Pasta al Wok", Name) | 
       grepl("Food Company", Name))
 
-
 #DefinitiveSample <- filter(
 #  df, grepl("Arroz y Pasta al Wok", Name) |
 #      grepl("Bogota Food Company", Name) |
@@ -53,20 +52,14 @@ ToyDB <- filter(
 #      grepl("Presto", Name) |
 #      grepl("Sr Wok", Name))
 
-
-
-DefinitiveSample <- DefinitiveSample[c(1,8:11)]
-rm(list=setdiff(ls(), "DefinitiveSample"))
-write.csv(DefinitiveSample, file = "/home/juan/Documents/ComentariosFrescosDomicilios/df.csv")
-
 library(quanteda)
-my_corpus <- corpus(DefinitiveSample$comments)
-mycorpus <- data.frame(summary(my_corpus, n = nrow(DefinitiveSample)))
+my_corpus <- corpus(ToyDB$comments)
+mycorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
 head(summary(my_corpus))
-docvars(my_corpus, "Name") <- DefinitiveSample$Name
-docvars(my_corpus, "ShipmentCost") <- DefinitiveSample$Shippings
-docvars(my_corpus, "Rating") <- DefinitiveSample$Rankings
-docvars(my_corpus, "MinimumOrder") <- DefinitiveSample$Deliveries
+docvars(my_corpus, "Name") <- ToyDB$Name
+docvars(my_corpus, "ShipmentCost") <- ToyDB$Shippings
+docvars(my_corpus, "Rating") <- ToyDB$Rankings
+docvars(my_corpus, "MinimumOrder") <- ToyDB$Deliveries
 head(summary(my_corpus))
 # Let's first create a list of stopwords
 spanishstopwords <- c("q", stopwords("spanish"))
@@ -78,13 +71,36 @@ CustomersDFM <- dfm(
   stem = TRUE, 
   remove_punct = TRUE)
 
+#DefinitiveSample <- DefinitiveSample[c(1,8:11)]
+#rm(list=setdiff(ls(), "DefinitiveSample"))
+#write.csv(DefinitiveSample, file = "/home/juan/Documents/ComentariosFrescosDomicilios/df.csv")
+#library(quanteda)
+#my_corpus <- corpus(DefinitiveSample$comments)
+#mycorpus <- data.frame(summary(my_corpus, n = nrow(DefinitiveSample)))
+#head(summary(my_corpus))
+#docvars(my_corpus, "Name") <- DefinitiveSample$Name
+#docvars(my_corpus, "ShipmentCost") <- DefinitiveSample$Shippings
+#docvars(my_corpus, "Rating") <- DefinitiveSample$Rankings
+#docvars(my_corpus, "MinimumOrder") <- DefinitiveSample$Deliveries
+#head(summary(my_corpus))
+# Let's first create a list of stopwords
+#spanishstopwords <- c("q", stopwords("spanish"))
+
+#CustomersDFM <- dfm(
+#  my_corpus, 
+#  remove_numbers = TRUE, 
+#  remove = spanishstopwords, 
+#  stem = TRUE, 
+#  remove_punct = TRUE)
+
 # Here, we can check the document-term frequency
 CustomersDFM[,1:5]
 
-
+pave <- list(clasificados, clasificados2)
+pave2 <- do.call("rbind", pave)
 
 # Finally, we end up with the following
 # 22 incidence matrices
-rm(list=setdiff(ls(), c("a", "b", "c", "d", "e", "f", "g", "h", 
-                "i", "j", "k", "l", "m", "n", "o", "p",
-                "q", "r", "s", "t", "u", "v")))
+#rm(list=setdiff(ls(), c("a", "b", "c", "d", "e", "f", "g", "h", 
+#                "i", "j", "k", "l", "m", "n", "o", "p",
+#                "q", "r", "s", "t", "u", "v")))
