@@ -1,13 +1,11 @@
 load("/home/juan/Documents/ComentariosFrescosDomicilios/DomiciliosComments.RData")
 rm(list=setdiff(ls(), "df"))
-table(df$Name)
 library(dplyr)
 df$Rankings <- gsub("[[:punct:]]", "", df$Rankings) %>% as.numeric(df$Rankings)
-df$comments <- as.character(df$Comments)
-df$TotalComments <- as.numeric(gsub("[^0-9.-]", "", df$Total_comments))
+df$Comments <- as.character(df$Comments)
+df$Total_comments <- as.numeric(gsub("[^0-9.-]", "", df$Total_comments))
 deliveries <- data.frame(table(df$Deliveries))
 df$Deliveries <- as.numeric(gsub("[^0-9.-]", "", df$Deliveries))
-deliveries2 <- data.frame(table(df$Deliveries))
 
 library(dplyr)
 df <- mutate(df, DeliveryTime =
@@ -28,6 +26,29 @@ ToyDB <- filter(
       grepl("Bogota Food Company", Name) |
       grepl("Bogotá Food Company Centro", Name))
 
+library(quanteda)
+my_corpus <- corpus(ToyDB$Comments)
+mycorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
+head(summary(my_corpus))
+docvars(my_corpus, "Name") <- ToyDB$Name
+docvars(my_corpus, "ShipmentCost") <- ToyDB$Shippings
+docvars(my_corpus, "Rating") <- ToyDB$Rankings
+docvars(my_corpus, "MinimumOrder") <- ToyDB$Deliveries
+head(summary(my_corpus))
+overviewcorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
+
+#ToyDB <- cbind(ToyDB, overviewcorpus, pave2)
+
+
+# Let's first create a list of stopwords
+spanishstopwords <- c("q", stopwords("spanish"))
+
+CustomersDFM <- dfm(
+  my_corpus, 
+  remove_numbers = TRUE, 
+  remove = spanishstopwords, 
+  stem = TRUE, 
+  remove_punct = TRUE)
 
 ArrozyPasta <- dfm(corpus_subset(my_corpus, grepl("Arroz y Pasta al Wok", Name)))
 ArrozyPastaSIM <- textstat_simil(ArrozyPasta, margin = "documents", method = "jaccard")
@@ -78,28 +99,7 @@ clasificados2$Category <- "Bogota Food Company"
 pave <- list(clasificados, clasificados2)
 pave2 <- do.call(rbind.data.frame, pave)
 
-library(quanteda)
-my_corpus <- corpus(ToyDB$comments)
-mycorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
-head(summary(my_corpus))
-docvars(my_corpus, "Name") <- ToyDB$Name
-docvars(my_corpus, "ShipmentCost") <- ToyDB$Shippings
-docvars(my_corpus, "Rating") <- ToyDB$Rankings
-docvars(my_corpus, "MinimumOrder") <- ToyDB$Deliveries
-head(summary(my_corpus))
-overviewcorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
-ToyDBa <- cbind(ToyDB, overviewcorpus, pave2)
 
-
-# Let's first create a list of stopwords
-spanishstopwords <- c("q", stopwords("spanish"))
-
-CustomersDFM <- dfm(
-  my_corpus, 
-  remove_numbers = TRUE, 
-  remove = spanishstopwords, 
-  stem = TRUE, 
-  remove_punct = TRUE)
 
 #DefinitiveSample <- DefinitiveSample[c(1,8:11)]
 #rm(list=setdiff(ls(), "DefinitiveSample"))
