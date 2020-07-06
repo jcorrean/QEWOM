@@ -1,5 +1,6 @@
 load("/home/juan/Documents/ComentariosFrescosDomicilios/DomiciliosComments.RData")
 rm(list=setdiff(ls(), "df"))
+table(df$Name)
 library(dplyr)
 df$Rankings <- gsub("[[:punct:]]", "", df$Rankings) %>% as.numeric(df$Rankings)
 df$comments <- as.character(df$Comments)
@@ -23,8 +24,30 @@ SelectedRestaurants <- filter(Restaurants, Freq > 200)
 # have different branch or point-of-sale.
 
 ToyDB <- filter(
-    df, grepl("Arroz y Pasta al Wok", Name) | 
-      grepl("Food Company", Name))
+    df, grepl("Arroz y Pasta al Wok", Name) |
+      grepl("Bogota Food Company", Name) |
+      grepl("Bogotá Food Company Centro", Name))
+
+
+ArrozyPasta <- dfm(corpus_subset(my_corpus, grepl("Arroz y Pasta al Wok", Name)))
+ArrozyPastaSIM <- textstat_simil(ArrozyPasta, margin = "documents", method = "jaccard")
+a <- data.frame(as.matrix(ArrozyPastaSIM))
+library(mclust)
+fit <- Mclust(a)
+summary(fit)
+clasificados <- data.frame(fit$classification)
+names(clasificados)[1] <- "classification"
+clasificados$Category <- "Arroz y Pasta al Wok"
+
+BogotaFoodCompany <- dfm(corpus_subset(my_corpus, grepl("Bogota Food Company", Name) |  grepl("Bogotá Food Company Centro", Name)))
+BogotaFoodCompanySIM <- textstat_simil(BogotaFoodCompany, margin = "documents", method = "jaccard")
+b <- data.frame(as.matrix(BogotaFoodCompanySIM))
+b[is.na(b)] <- 0
+fit2 <- Mclust(b)
+summary(fit2)
+clasificados2 <- data.frame(fit2$classification)
+names(clasificados2)[1] <- "classification"
+clasificados2$Category <- "Bogota Food Company"
 
 #DefinitiveSample <- filter(
 #  df, grepl("Arroz y Pasta al Wok", Name) |
@@ -52,6 +75,9 @@ ToyDB <- filter(
 #      grepl("Presto", Name) |
 #      grepl("Sr Wok", Name))
 
+pave <- list(clasificados, clasificados2)
+pave2 <- do.call(rbind.data.frame, pave)
+
 library(quanteda)
 my_corpus <- corpus(ToyDB$comments)
 mycorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
@@ -61,6 +87,10 @@ docvars(my_corpus, "ShipmentCost") <- ToyDB$Shippings
 docvars(my_corpus, "Rating") <- ToyDB$Rankings
 docvars(my_corpus, "MinimumOrder") <- ToyDB$Deliveries
 head(summary(my_corpus))
+overviewcorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
+ToyDBa <- cbind(ToyDB, overviewcorpus, pave2)
+
+
 # Let's first create a list of stopwords
 spanishstopwords <- c("q", stopwords("spanish"))
 
@@ -96,8 +126,6 @@ CustomersDFM <- dfm(
 # Here, we can check the document-term frequency
 CustomersDFM[,1:5]
 
-pave <- list(clasificados, clasificados2)
-pave2 <- do.call("rbind", pave)
 
 # Finally, we end up with the following
 # 22 incidence matrices
