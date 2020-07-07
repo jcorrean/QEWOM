@@ -1,6 +1,6 @@
 load("/home/juan/Documents/ComentariosFrescosDomicilios/DomiciliosComments.RData")
 rm(list=setdiff(ls(), "df"))
-library(dplyr)
+library(dplyr) 
 df$Rankings <- gsub("[[:punct:]]", "", df$Rankings) %>% as.numeric(df$Rankings)
 df$Comments <- as.character(df$Comments)
 df$Total_comments <- as.numeric(gsub("[^0-9.-]", "", df$Total_comments))
