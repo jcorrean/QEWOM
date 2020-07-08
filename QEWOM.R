@@ -26,6 +26,11 @@ ToyDB <- filter(
       grepl("Bogota Food Company", Name) |
       grepl("Bogotá Food Company Centro", Name))
 
+#ToyDB <- filter(
+#  df, grepl("Arroz y Pasta al Wok", Name) |
+#    grepl("Bogota Food Company", Name) |
+#    grepl("Bogotá Food Company Centro", Name))
+
 library(quanteda)
 my_corpus <- corpus(ToyDB$Comments)
 mycorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
