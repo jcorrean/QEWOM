@@ -101,6 +101,14 @@ clasificados2$Category <- "Bogota Food Company"
 #      grepl("Presto", Name) |
 #      grepl("Sr Wok", Name))
 
+# In other opportunities, the result of text mining
+# the comments of different food providers have shown
+# that the classification content (as the result)
+# of the mclust algorithm is not consistent across
+# samples. This leads me to focus on a subsample. Among
+# all comments, those of KFC might be of particular 
+# convnience (due to its sample size).
+
 pave <- list(clasificados, clasificados2)
 pave2 <- do.call(rbind.data.frame, pave)
 
