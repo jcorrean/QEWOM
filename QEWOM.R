@@ -105,7 +105,7 @@ clasificados2$Category <- "Bogota Food Company"
 # the comments of different food providers have shown
 # that the classification content (as the result)
 # of the mclust algorithm is not consistent across
-# samples. This leads me to focus on a subsample. Among
+# samples. This leads me to focus on a sub-sample. Among
 # all comments, those of KFC might be of particular 
 # convenience (due to its sample size).
 
