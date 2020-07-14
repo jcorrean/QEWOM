@@ -107,7 +107,7 @@ clasificados2$Category <- "Bogota Food Company"
 # of the mclust algorithm is not consistent across
 # samples. This leads me to focus on a subsample. Among
 # all comments, those of KFC might be of particular 
-# convnience (due to its sample size).
+# convenience (due to its sample size).
 
 pave <- list(clasificados, clasificados2)
 pave2 <- do.call(rbind.data.frame, pave)
