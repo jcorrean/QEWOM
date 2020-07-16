@@ -16,9 +16,6 @@ docvars(my_corpus, "MinimumOrder") <- ToyDB$Deliveries
 head(summary(my_corpus))
 overviewcorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
 
-#ToyDB <- cbind(ToyDB, overviewcorpus, pave2)
-
-
 # Let's first create a list of stopwords
 spanishstopwords <- c("q", stopwords("spanish"))
 
@@ -29,12 +26,12 @@ CustomersDFM <- dfm(
   stem = TRUE, 
   remove_punct = TRUE)
 
-ArrozyPasta <- dfm(corpus_subset(my_corpus, grepl("Arroz y Pasta al Wok", Name)))
-ArrozyPastaSIM <- textstat_simil(ArrozyPasta, margin = "documents", method = "jaccard")
-a <- data.frame(as.matrix(ArrozyPastaSIM))
+Restaurant1 <- dfm(corpus_subset(my_corpus, grepl("Arroz y Pasta al Wok", Name)))
+Restaurant1SIM <- textstat_simil(Restaurant1, margin = "documents", method = "jaccard")
+a <- data.frame(as.matrix(Restaurant1SIM))
 library(mclust)
 fit <- Mclust(a)
 summary(fit)
-clasificados <- data.frame(fit$classification)
-names(clasificados)[1] <- "classification"
-clasificados$Category <- "Arroz y Pasta al Wok"
+classification <- data.frame(fit$classification)
+names(classification)[1] <- "classification"
+classification$Restaurant <- "Arroz y Pasta al Wok"
