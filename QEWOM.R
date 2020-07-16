@@ -6,6 +6,12 @@ df$Comments <- as.character(df$Comments)
 df$Total_comments <- as.numeric(gsub("[^0-9.-]", "", df$Total_comments))
 deliveries <- data.frame(table(df$Deliveries))
 df$Deliveries <- as.numeric(gsub("[^0-9.-]", "", df$Deliveries))
+# This last syntax removes all non-numeric characters
+# and this introduces errors, because the cost of deliveries
+# is in the range of thousands Colombian Pesos. Thus, we
+# need to introduce an extra change like this to preserve
+# the current cost of deliveries
+df$Deliveries <- 1000*df$Deliveries
 
 library(dplyr)
 df <- mutate(df, DeliveryTime =
