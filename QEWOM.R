@@ -51,7 +51,7 @@ overviewcorpus <- data.frame(summary(my_corpus, n = nrow(ToyDB)))
 
 
 #### The main preprocessing script is valid until this point
-# other preprocessing tasks are conducted by each 
+# other pre-processing tasks are conducted by each 
 # individual restaurant
 
 #ToyDB <- cbind(ToyDB, overviewcorpus, pave2)
